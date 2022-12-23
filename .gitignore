@@ -149,3 +149,4 @@ scripts/pythonw.exe
 
 # models
 models
+.vscode/launch.json
