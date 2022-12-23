@@ -145,3 +145,4 @@ dmypy.json
 
 # IDE
 .idea
+scripts/pythonw.exe
