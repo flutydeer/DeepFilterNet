@@ -9,13 +9,14 @@ from loguru import logger
 from torch import Tensor, nn
 from torch.nn import functional as F
 
-from df import __version__, config
 from df.checkpoint import load_model as load_model_cp
+from df.config import config
 from df.io import load_audio, resample, save_audio
 from df.logger import init_logger
 from df.model import ModelParams
 from df.modules import get_device
 from df.utils import as_complex, as_real, download_file, get_cache_dir, get_norm_alpha
+from df.version import version
 from libdf import DF, erb, erb_norm, unit_norm
 
 PRETRAINED_MODELS = ("DeepFilterNet", "DeepFilterNet2")
@@ -30,6 +31,7 @@ def main(args):
         config_allow_defaults=True,
         epoch=args.epoch,
     )
+    suffix = suffix if args.suffix else None
     if args.output_dir is None:
         args.output_dir = "."
     elif not os.path.isdir(args.output_dir):
@@ -239,6 +241,21 @@ def parse_epoch_type(value: str) -> Union[int, str]:
         return value
 
 
+class PrintVersion(argparse.Action):
+    def __init__(self, option_strings, dest):
+        super().__init__(
+            option_strings=option_strings,
+            dest=dest,
+            nargs=0,
+            required=False,
+            help="Print DeepFilterNet version information",
+        )
+
+    def __call__(self, *args):
+        print("DeepFilterNet", version)
+        exit(0)
+
+
 def setup_df_argument_parser(default_log_level: str = "INFO") -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -276,7 +293,7 @@ def setup_df_argument_parser(default_log_level: str = "INFO") -> argparse.Argume
         type=parse_epoch_type,
         help="Epoch for checkpoint loading. Can be one of ['best', 'latest', <int>].",
     )
-    parser.add_argument("--version", action="store_true")
+    parser.add_argument("-v", "--version", action=PrintVersion)
     return parser
 
 
@@ -301,10 +318,13 @@ def run():
         nargs="+",
         help="List of noise files to mix with the clean speech file.",
     )
+    parser.add_argument(
+        "--no-suffix",
+        action="store_false",
+        dest="suffix",
+        help="Don't add the model suffix to the enhanced audio files",
+    )
     args = parser.parse_args()
-    if args.version:
-        print("DeepFilterNet", __version__)
-        exit(0)
     main(args)
 
 

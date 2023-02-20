@@ -83,6 +83,7 @@ class PytorchDataLoader:
         p_bw_ext: Optional[float] = None,  # Percentage of bandwidth limited signal for extension
         p_clipping: Optional[float] = None,  # Clipping distortion applied to the (noisy) speech
         p_zeroing: Optional[float] = None,  # Zeroing distortion applied to the (noisy) speech
+        p_interfer_sp: Optional[float] = None,  # Add an interfering speaker
         p_air_absorption: Optional[float] = None,  # Distortion applied to the (noisy) speech
         overfit: bool = False,  # Overfit on one epoch
         seed: int = 0,
@@ -116,6 +117,7 @@ class PytorchDataLoader:
             p_bw_ext=p_bw_ext,
             p_clipping=p_clipping,
             p_zeroing=p_zeroing,
+            p_interfer_sp=p_interfer_sp,
             p_air_absorption=p_air_absorption,
             prefetch=prefetch_loader,
             drop_last=drop_last,
@@ -240,7 +242,7 @@ class PytorchDataLoader:
     def log_dataloader_msgs(self):
         """Fetches log messages generated in the rust backend and converts to loguru."""
         # message has type (level: str, message: str, module: Optional[str], lineno: Optional[int])
-        for (level, msg, module, lineno) in self.loader.get_log_messages():
+        for level, msg, module, lineno in self.loader.get_log_messages():
             # with logger.contextualize(module: "Dataloader", file=file, lineno=lineno):
             def patch(r):
                 r["file"] = {"file": os.path.basename(module) + ".rs", "path": "pyDF-data/src/"}
